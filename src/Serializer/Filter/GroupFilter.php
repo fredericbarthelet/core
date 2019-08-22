@@ -13,7 +13,9 @@ declare(strict_types=1);
 
 namespace ApiPlatform\Core\Serializer\Filter;
 
+use ApiPlatform\Core\Api\FilterDescription;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\PropertyInfo\Type;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 
 /**
@@ -65,13 +67,6 @@ final class GroupFilter implements FilterInterface
      */
     public function getDescription(string $resourceClass): array
     {
-        return [
-            "$this->parameterName[]" => [
-                'property' => null,
-                'type' => 'string',
-                'is_collection' => true,
-                'required' => false,
-            ],
-        ];
+        return [new FilterDescription("$this->parameterName[]", null, Type::BUILTIN_TYPE_STRING, false, null, true)];
     }
 }

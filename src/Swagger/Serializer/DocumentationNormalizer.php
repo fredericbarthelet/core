@@ -680,22 +680,18 @@ final class DocumentationNormalizer implements NormalizerInterface, CacheableSup
                 continue;
             }
 
-            foreach ($filter->getDescription($resourceClass) as $name => $data) {
+            foreach ($filter->getDescription($resourceClass) as $filterDesciption) {
                 $parameter = [
-                    'name' => $name,
+                    'name' => $filterDesciption->getName(),
                     'in' => 'query',
-                    'required' => $data['required'],
+                    'required' => $filterDesciption->isRequired(),
                 ];
 
-                $type = \in_array($data['type'], Type::$builtinTypes, true) ? $this->jsonSchemaTypeFactory->getType(new Type($data['type'], false, null, $data['is_collection'] ?? false)) : ['type' => 'string'];
-                $v3 ? $parameter['schema'] = $type : $parameter += $type;
-
-                if ($v3 && isset($data['schema'])) {
-                    $parameter['schema'] = $data['schema'];
-                }
+                $type = \in_array($filterDesciption->getType(), Type::$builtinTypes, true) ? $this->jsonSchemaTypeFactory->getType(new Type($filterDesciption->getType(), false, null, $filterDesciption->isCollection() ?? false)) : ['type' => 'string'];
+                $v3 ? ($filterDescription->getSchema() ? $parameter['schema'] = $filterDescription->getSchema() : $parameter['schema'] = $type) : $parameter += $type;
 
                 if ('array' === ($type['type'] ?? '')) {
-                    $deepObject = \in_array($data['type'], [Type::BUILTIN_TYPE_ARRAY, Type::BUILTIN_TYPE_OBJECT], true);
+                    $deepObject = \in_array($filterDesciption->getType(), [Type::BUILTIN_TYPE_ARRAY, Type::BUILTIN_TYPE_OBJECT], true);
 
                     if ($v3) {
                         $parameter['style'] = $deepObject ? 'deepObject' : 'form';
@@ -703,11 +699,6 @@ final class DocumentationNormalizer implements NormalizerInterface, CacheableSup
                     } else {
                         $parameter['collectionFormat'] = $deepObject ? 'csv' : 'multi';
                     }
-                }
-
-                $key = $v3 ? 'openapi' : 'swagger';
-                if (isset($data[$key])) {
-                    $parameter = $data[$key] + $parameter;
                 }
 
                 $parameters[] = $parameter;
