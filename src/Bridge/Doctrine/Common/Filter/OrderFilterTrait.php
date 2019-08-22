@@ -13,7 +13,9 @@ declare(strict_types=1);
 
 namespace ApiPlatform\Core\Bridge\Doctrine\Common\Filter;
 
+use ApiPlatform\Core\Api\FilterDescription;
 use ApiPlatform\Core\Bridge\Doctrine\Common\PropertyHelperTrait;
+use Symfony\Component\PropertyInfo\Type;
 
 /**
  * Trait for ordering the collection by given properties.
@@ -48,18 +50,24 @@ trait OrderFilterTrait
                 continue;
             }
             $propertyName = $this->normalizePropertyName($property);
-            $description[sprintf('%s[%s]', $this->orderParameterName, $propertyName)] = [
-                'property' => $propertyName,
-                'type' => 'string',
-                'required' => false,
-                'schema' => [
-                    'type' => 'string',
-                    'enum' => [
-                        strtolower(OrderFilterInterface::DIRECTION_ASC),
-                        strtolower(OrderFilterInterface::DIRECTION_DESC),
+            $description[] = new FilterDescription(
+                sprintf('%s[%s]', $this->orderParameterName, $propertyName),
+                $propertyName,
+                Type::BUILTIN_TYPE_STRING,
+                false,
+                null,
+                false,
+                null,
+                [
+                    'schema' => [
+                        'type' => 'string',
+                        'enum' => [
+                            strtolower(OrderFilterInterface::DIRECTION_ASC),
+                            strtolower(OrderFilterInterface::DIRECTION_DESC),
+                        ],
                     ],
-                ],
-            ];
+                ]
+            );
         }
 
         return $description;
